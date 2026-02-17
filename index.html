@@ -9,6 +9,9 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#161a1f">
 
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 body {
   margin: 0;
@@ -127,12 +130,8 @@ button:hover {
     <input id="callsign" placeholder="CALLSIGN">
     <input id="dep" placeholder="DEPARTURE ICAO">
     <input id="arr" placeholder="ARRIVAL ICAO">
-    <input id="rwy" placeholder="RUNWAY">
-    <input id="sid" placeholder="SID">
     <input id="route" placeholder="ROUTE">
     <input id="fl" placeholder="CRUISE FL">
-    <input id="squawk" placeholder="SQUAWK">
-    <input id="qnh" placeholder="QNH">
   </div>
 
   <div class="panel">
@@ -145,7 +144,7 @@ button:hover {
 <div class="button-bar">
   <button onclick="clearPad()">CLEAR</button>
   <button onclick="saveDrawing()">SAVE</button>
-  <button onclick="exportImage()">EXPORT</button>
+  <button onclick="exportPDF()">EXPORT PDF</button>
 </div>
 
 <script>
@@ -159,7 +158,7 @@ function updateUTC() {
 setInterval(updateUTC, 1000);
 updateUTC();
 
-/* CANVAS DRAW */
+/* CANVAS */
 const canvas = document.getElementById("pad");
 const ctx = canvas.getContext("2d");
 
@@ -208,11 +207,20 @@ function loadDrawing() {
 }
 loadDrawing();
 
-function exportImage() {
-  const link = document.createElement("a");
-  link.download = "virtual-wings-notes.png";
-  link.href = canvas.toDataURL();
-  link.click();
+/* PDF EXPORT */
+async function exportPDF() {
+  const { jsPDF } = window.jspdf;
+
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "px",
+    format: [canvas.width, canvas.height]
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+
+  pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+  pdf.save("virtual-wings-notes.pdf");
 }
 
 /* SIMBRIEF */
@@ -250,6 +258,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
