@@ -127,15 +127,18 @@ button:hover {
   <div class="panel">
     <div class="panel-title">FLIGHT DATA</div>
 
-    <input id="callsign" placeholder="CALLSIGN">
-    <input id="dep" placeholder="DEPARTURE ICAO">
-    <input id="arr" placeholder="ARRIVAL ICAO">
-    <input id="runway" placeholder="RUNWAY">
-    <input id="sid" placeholder="SID">
-    <input id="route" placeholder="ROUTE">
-    <input id="fl" placeholder="CRUISE FL">
-    <input id="squawk" placeholder="SQUAWK">
-    <input id="qnh" placeholder="QNH">
+   input {
+  width: 100%;
+  background: #111418;          /* Daha koyu */
+  border: 1px solid #4b5563;    /* Daha görünür */
+  color: #ffffff;
+  padding: 12px;                /* Daha yüksek */
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
 
   </div>
 
@@ -270,3 +273,4 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
