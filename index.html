@@ -1,168 +1,134 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Virtual Wings – Pilot Pad</title>
-
 <style>
 body {
-    margin:0;
-    background:#0b0f17;
-    color:#00ff88;
-    font-family:Arial, sans-serif;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #161a1f;
+  color: #d6d9de;
 }
 
-header {
-    text-align:center;
-    padding:15px;
-    font-size:22px;
-    font-weight:bold;
-    background:#121826;
-    letter-spacing:1px;
+.topbar {
+  background: #1f242a;
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  border-bottom: 1px solid #2f353c;
 }
 
-.form-section {
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
-    gap:8px;
-    padding:15px;
+.header {
+  background: #252b31;
+  padding: 14px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 2px;
+  border-bottom: 2px solid #3b82f6;
 }
 
-input {
-    background:#1a2233;
-    border:1px solid #00ff88;
-    color:#00ff88;
-    padding:8px;
-    border-radius:6px;
+.container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-canvas {
-    background:white;
-    display:block;
-    margin:0 auto;
-    border-radius:12px;
-    touch-action:none;
+.panel {
+  background: #2b3036;
+  padding: 18px;
+  border-radius: 4px;
+  border: 1px solid #3a4047;
 }
 
-.controls {
-    text-align:center;
-    padding:15px;
+.panel-title {
+  font-size: 12px;
+  margin-bottom: 15px;
+  color: #8fa3b8;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #3a4047;
+  padding-bottom: 5px;
+}
+
+input, textarea {
+  width: 100%;
+  background: #1e2328;
+  border: 1px solid #3a4047;
+  color: #ffffff;
+  padding: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+textarea {
+  height: 160px;
+  resize: none;
+}
+
+.button-bar {
+  text-align: center;
+  padding: 20px;
 }
 
 button {
-    background:#00ff88;
-    border:none;
-    padding:10px 15px;
-    margin:5px;
-    font-weight:bold;
-    border-radius:6px;
-    cursor:pointer;
+  background: #2f353c;
+  border: 1px solid #3a4047;
+  color: #d6d9de;
+  padding: 8px 20px;
+  margin: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #3a4047;
 }
 </style>
-</head>
-<body>
 
-<header>✈️ VIRTUAL WINGS – PILOT PAD</header>
-
-<div class="form-section">
-<input id="callsign" placeholder="Callsign">
-<input id="dep" placeholder="Departure">
-<input id="arr" placeholder="Arrival">
-<input id="squawk" placeholder="Squawk">
-<input id="qnh" placeholder="QNH">
-<input id="rwy" placeholder="Runway">
-<input id="sid" placeholder="SID">
-<input id="climb" placeholder="Initial Climb">
+<div class="topbar">
+  <div>UTC: <span id="utcTime"></span></div>
+  <div>VIRTUAL WINGS EFB</div>
+  <div>BAT 100%</div>
 </div>
 
-<canvas id="pad"></canvas>
+<div class="header">
+  A320 PILOT PAD
+</div>
 
-<div class="controls">
-<button onclick="clearPad()">Clear</button>
-<button onclick="saveData()">Save</button>
-<button onclick="exportPDF()">Export PDF</button>
+<div class="container">
+
+  <div class="panel">
+    <div class="panel-title">FLIGHT DATA</div>
+    <input placeholder="CALLSIGN">
+    <input placeholder="DEPARTURE ICAO">
+    <input placeholder="ARRIVAL ICAO">
+    <input placeholder="RUNWAY">
+    <input placeholder="SID">
+    <input placeholder="INITIAL CLIMB">
+    <input placeholder="SQUAWK">
+    <input placeholder="QNH">
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">ATC CLEARANCE</div>
+    <textarea placeholder="CLEARED TO..."></textarea>
+  </div>
+
+</div>
+
+<div class="button-bar">
+  <button>CLEAR</button>
+  <button>SAVE</button>
+  <button>EXPORT PDF</button>
 </div>
 
 <script>
-const canvas = document.getElementById('pad');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth - 40;
-    canvas.height = window.innerHeight * 0.5;
+function updateUTC() {
+  const now = new Date();
+  document.getElementById("utcTime").innerText =
+    now.getUTCHours().toString().padStart(2, '0') + ":" +
+    now.getUTCMinutes().toString().padStart(2, '0');
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-let drawing = false;
-
-canvas.addEventListener('pointerdown', e => {
-    drawing = true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-});
-
-canvas.addEventListener('pointermove', e => {
-    if (!drawing) return;
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "black";
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-});
-
-canvas.addEventListener('pointerup', () => drawing = false);
-canvas.addEventListener('pointercancel', () => drawing = false);
-
-function clearPad() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function saveData() {
-    const data = {
-        callsign: callsign.value,
-        dep: dep.value,
-        arr: arr.value,
-        squawk: squawk.value,
-        qnh: qnh.value,
-        rwy: rwy.value,
-        sid: sid.value,
-        climb: climb.value,
-        drawing: canvas.toDataURL()
-    };
-    localStorage.setItem("vwFlight", JSON.stringify(data));
-    alert("Flight Saved Successfully ✈️");
-}
-
-function loadData() {
-    const saved = localStorage.getItem("vwFlight");
-    if (!saved) return;
-    const data = JSON.parse(saved);
-
-    callsign.value = data.callsign;
-    dep.value = data.dep;
-    arr.value = data.arr;
-    squawk.value = data.squawk;
-    qnh.value = data.qnh;
-    rwy.value = data.rwy;
-    sid.value = data.sid;
-    climb.value = data.climb;
-
-    const img = new Image();
-    img.src = data.drawing;
-    img.onload = () => ctx.drawImage(img, 0, 0);
-}
-
-function exportPDF() {
-    const link = document.createElement('a');
-    link.download = "virtual_wings_flight.png";
-    link.href = canvas.toDataURL();
-    link.click();
-}
-
-loadData();
+setInterval(updateUTC, 1000);
+updateUTC();
 </script>
 
-</body>
-</html>
+
+
