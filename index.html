@@ -9,7 +9,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#161a1f">
 
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -127,11 +126,17 @@ button:hover {
 
   <div class="panel">
     <div class="panel-title">FLIGHT DATA</div>
+
     <input id="callsign" placeholder="CALLSIGN">
     <input id="dep" placeholder="DEPARTURE ICAO">
     <input id="arr" placeholder="ARRIVAL ICAO">
+    <input id="runway" placeholder="RUNWAY">
+    <input id="sid" placeholder="SID">
     <input id="route" placeholder="ROUTE">
     <input id="fl" placeholder="CRUISE FL">
+    <input id="squawk" placeholder="SQUAWK">
+    <input id="qnh" placeholder="QNH">
+
   </div>
 
   <div class="panel">
@@ -207,27 +212,29 @@ function loadDrawing() {
 }
 loadDrawing();
 
-/* PDF EXPORT (GERÇEK PDF) */
+/* PDF EXPORT + DATA */
 function exportPDF() {
   const { jsPDF } = window.jspdf;
-
   const pdf = new jsPDF();
 
   const callsign = document.getElementById("callsign").value || "-";
   const route = document.getElementById("route").value || "-";
+  const dep = document.getElementById("dep").value || "-";
+  const arr = document.getElementById("arr").value || "-";
 
   pdf.setFontSize(16);
   pdf.text("VIRTUAL WINGS PILOT PAD", 20, 20);
   pdf.text("CALLSIGN: " + callsign, 20, 35);
-  pdf.text("ROUTE: " + route, 20, 50);
+  pdf.text("FROM: " + dep + "   TO: " + arr, 20, 50);
+  pdf.text("ROUTE: " + route, 20, 65);
 
   const imgData = canvas.toDataURL("image/png");
-  pdf.addImage(imgData, "PNG", 15, 60, 180, 100);
+  pdf.addImage(imgData, "PNG", 15, 80, 180, 100);
 
   pdf.save("virtual-wings-notes.pdf");
 }
 
-/* SIMBRIEF IMPORT (GÜVENİLİR DATA) */
+/* SIMBRIEF */
 async function loadSimBrief() {
   const id = document.getElementById("simbriefID").value;
 
@@ -263,6 +270,8 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+
 
 
 
