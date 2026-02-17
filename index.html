@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -120,18 +121,9 @@ button:hover {
 <div class="container">
 
   <div class="panel">
-    <div class="panel-title">SIMBRIEF IMPORT</div>
-    <input id="simbriefID" placeholder="SIMBRIEF USER ID">
-    <button onclick="loadSimBrief()">IMPORT OFP</button>
-  </div>
-
-  <div class="panel">
     <div class="panel-title">FLIGHT DATA</div>
     <input id="callsign" placeholder="CALLSIGN">
-    <input id="dep" placeholder="DEPARTURE ICAO">
-    <input id="arr" placeholder="ARRIVAL ICAO">
     <input id="route" placeholder="ROUTE">
-    <input id="fl" placeholder="CRUISE FL">
   </div>
 
   <div class="panel">
@@ -146,7 +138,6 @@ button:hover {
   <button onclick="saveDrawing()">SAVE</button>
   <button onclick="exportPDF()">EXPORT PDF</button>
 </div>
-
 
 <script>
 /* UTC CLOCK */
@@ -208,47 +199,27 @@ function loadDrawing() {
 }
 loadDrawing();
 
-/* PDF EXPORT */
-async function exportPDF() {
+/* PDF EXPORT + DATA */
+function exportPDF() {
   const { jsPDF } = window.jspdf;
 
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "px",
-    format: [canvas.width, canvas.height]
+    format: [canvas.width, canvas.height + 60]
   });
 
+  const callsign = document.getElementById("callsign").value || "-";
+  const route = document.getElementById("route").value || "-";
+
+  pdf.setFontSize(16);
+  pdf.text(`CALLSIGN: ${callsign}`, 20, 30);
+  pdf.text(`ROUTE: ${route}`, 20, 50);
+
   const imgData = canvas.toDataURL("image/png");
+  pdf.addImage(imgData, "PNG", 0, 70, canvas.width, canvas.height);
 
-  pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-  pdf.save("virtual-wings-notes.pdf");
-}
-
-/* SIMBRIEF */
-async function loadSimBrief() {
-  const id = document.getElementById("simbriefID").value;
-  if (!id) {
-    alert("SIMBRIEF ID GİR");
-    return;
-  }
-
-  try {
-    const url = `https://www.simbrief.com/api/xml.fetcher.php?userid=${id}&json=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    document.getElementById("callsign").value = data.general.callsign || "";
-    document.getElementById("dep").value = data.origin.icao_code || "";
-    document.getElementById("arr").value = data.destination.icao_code || "";
-    document.getElementById("route").value = data.general.route || "";
-    document.getElementById("fl").value = "FL" + data.general.initial_altitude || "";
-
-    alert("OFP IMPORTED ✈️");
-
-  } catch (err) {
-    alert("SimBrief bağlantı hatası");
-    console.error(err);
-  }
+  pdf.save("virtual-wings-flight-notes.pdf");
 }
 
 /* SERVICE WORKER */
@@ -259,6 +230,8 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+
 
 
 
