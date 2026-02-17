@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#161a1f">
 
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -16,90 +17,110 @@ body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
   background: #161a1f;
-  color: #e2e6eb;
-  font-weight: 500;
+  color: #e5e7eb;
 }
 
+/* TOP BAR */
 .topbar {
-  background: #1f242a;
-  padding: 8px 18px;
+  background: #0f172a;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  font-weight: 600;
-  border-bottom: 1px solid #2f353c;
-}
-
-.header {
-  background: #252b31;
-  padding: 14px;
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 2px;
-  border-bottom: 2px solid #3b82f6;
-}
-
-.container {
-  padding: 18px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-}
-
-.panel {
-  background: #2b3036;
-  padding: 18px;
-  border-radius: 4px;
-  border: 1px solid #3a4047;
-}
-
-.panel-title {
-  font-size: 13px;
-  margin-bottom: 14px;
-  color: #a9b6c4;
-  letter-spacing: 1px;
-  border-bottom: 1px solid #3a4047;
-  padding-bottom: 6px;
-  font-weight: 700;
-}
-
-input {
-  width: 100%;
-  background: #1e2328;
-  border: 1px solid #3a4047;
-  color: #ffffff;
-  padding: 10px;
-  margin-bottom: 10px;
   font-size: 14px;
   font-weight: 600;
+  border-bottom: 2px solid #00ffcc;
+  box-shadow: 0 0 10px #00ffcc;
 }
 
+/* HEADER */
+.header {
+  background: #111827;
+  padding: 16px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border-bottom: 2px solid #00ffcc;
+  box-shadow: 0 0 12px #00ffcc;
+}
+
+/* LAYOUT */
+.container {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+/* PANEL */
+.panel {
+  background: #020617;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 15px rgba(0,255,204,0.35);
+}
+
+/* PANEL TITLE */
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #00ffcc;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #00ffcc;
+  padding-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+/* INPUT */
+input {
+  width: 100%;
+  background: #000000;
+  border: 2px solid #00ffcc;
+  color: #ffffff;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+input::placeholder {
+  color: #9ca3af;
+}
+
+/* CANVAS */
 canvas {
   width: 100%;
   height: 340px;
-  background: #ffffff;
-  border: 1px solid #3a4047;
+  background: white;
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 10px rgba(0,255,204,0.4);
   touch-action: none;
 }
 
+/* BUTTONS */
 .button-bar {
   text-align: center;
-  padding: 18px;
+  padding: 10px;
 }
 
 button {
-  background: #2f353c;
-  border: 1px solid #3a4047;
-  color: #e2e6eb;
-  padding: 10px 26px;
+  background: black;
+  border: 2px solid #00ffcc;
+  color: #00ffcc;
+  padding: 10px 24px;
   margin: 6px;
   font-size: 14px;
   font-weight: 700;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #3a4047;
+  background: #00ffcc;
+  color: black;
 }
 </style>
 </head>
@@ -127,18 +148,15 @@ button:hover {
   <div class="panel">
     <div class="panel-title">FLIGHT DATA</div>
 
-   input {
-  width: 100%;
-  background: #111418;          /* Daha koyu */
-  border: 1px solid #4b5563;    /* Daha görünür */
-  color: #ffffff;
-  padding: 12px;                /* Daha yüksek */
-  margin-bottom: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 3px;
-  box-sizing: border-box;
-}
+    <input id="callsign" placeholder="CALLSIGN">
+    <input id="dep" placeholder="DEPARTURE ICAO">
+    <input id="arr" placeholder="ARRIVAL ICAO">
+    <input id="runway" placeholder="RUNWAY">
+    <input id="sid" placeholder="SID">
+    <input id="route" placeholder="ROUTE">
+    <input id="fl" placeholder="CRUISE FL">
+    <input id="squawk" placeholder="SQUAWK">
+    <input id="qnh" placeholder="QNH">
 
   </div>
 
@@ -215,24 +233,21 @@ function loadDrawing() {
 }
 loadDrawing();
 
-/* PDF EXPORT + DATA */
+/* PDF EXPORT */
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
 
   const callsign = document.getElementById("callsign").value || "-";
   const route = document.getElementById("route").value || "-";
-  const dep = document.getElementById("dep").value || "-";
-  const arr = document.getElementById("arr").value || "-";
 
   pdf.setFontSize(16);
   pdf.text("VIRTUAL WINGS PILOT PAD", 20, 20);
   pdf.text("CALLSIGN: " + callsign, 20, 35);
-  pdf.text("FROM: " + dep + "   TO: " + arr, 20, 50);
-  pdf.text("ROUTE: " + route, 20, 65);
+  pdf.text("ROUTE: " + route, 20, 50);
 
   const imgData = canvas.toDataURL("image/png");
-  pdf.addImage(imgData, "PNG", 15, 80, 180, 100);
+  pdf.addImage(imgData, "PNG", 15, 60, 180, 100);
 
   pdf.save("virtual-wings-notes.pdf");
 }
