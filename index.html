@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<title>Virtual Wings Pilot Pad</title>
+
 <style>
 body {
   margin: 0;
@@ -27,7 +35,7 @@ body {
 .container {
   padding: 20px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
@@ -47,19 +55,22 @@ body {
   padding-bottom: 5px;
 }
 
-input, textarea {
+input {
   width: 100%;
   background: #1e2328;
   border: 1px solid #3a4047;
-  color: #ffffff;
+  color: white;
   padding: 8px;
   margin-bottom: 10px;
   font-size: 13px;
 }
 
-textarea {
-  height: 160px;
-  resize: none;
+canvas {
+  width: 100%;
+  height: 320px;
+  background: white;
+  border: 1px solid #3a4047;
+  touch-action: none;
 }
 
 .button-bar {
@@ -81,6 +92,9 @@ button:hover {
   background: #3a4047;
 }
 </style>
+</head>
+
+<body>
 
 <div class="topbar">
   <div>UTC: <span id="utcTime"></span></div>
@@ -107,19 +121,20 @@ button:hover {
   </div>
 
   <div class="panel">
-    <div class="panel-title">ATC CLEARANCE</div>
-    <textarea placeholder="CLEARED TO..."></textarea>
+    <div class="panel-title">NOTES / KNEEBOARD</div>
+    <canvas id="pad"></canvas>
   </div>
 
 </div>
 
 <div class="button-bar">
-  <button>CLEAR</button>
-  <button>SAVE</button>
-  <button>EXPORT PDF</button>
+  <button onclick="clearPad()">CLEAR</button>
+  <button onclick="saveDrawing()">SAVE</button>
+  <button onclick="exportImage()">EXPORT</button>
 </div>
 
 <script>
+/* UTC CLOCK */
 function updateUTC() {
   const now = new Date();
   document.getElementById("utcTime").innerText =
@@ -128,7 +143,66 @@ function updateUTC() {
 }
 setInterval(updateUTC, 1000);
 updateUTC();
+
+/* CANVAS */
+const canvas = document.getElementById("pad");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 320;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let drawing = false;
+
+canvas.addEventListener("pointerdown", e => {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+});
+
+canvas.addEventListener("pointermove", e => {
+  if (!drawing) return;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "black";
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
+});
+
+canvas.addEventListener("pointerup", () => drawing = false);
+canvas.addEventListener("pointerleave", () => drawing = false);
+
+/* BUTTONS */
+function clearPad() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveDrawing() {
+  const dataURL = canvas.toDataURL();
+  localStorage.setItem("vwNotes", dataURL);
+  alert("Notes Saved ✈️");
+}
+
+function loadDrawing() {
+  const saved = localStorage.getItem("vwNotes");
+  if (!saved) return;
+  const img = new Image();
+  img.src = saved;
+  img.onload = () => ctx.drawImage(img, 0, 0);
+}
+loadDrawing();
+
+function exportImage() {
+  const link = document.createElement("a");
+  link.download = "virtual_wings_notes.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
 </script>
 
-
+</body>
+</html>
 
