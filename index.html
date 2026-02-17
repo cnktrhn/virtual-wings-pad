@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -121,9 +120,18 @@ button:hover {
 <div class="container">
 
   <div class="panel">
+    <div class="panel-title">SIMBRIEF IMPORT</div>
+    <input id="simbriefID" placeholder="SIMBRIEF USER ID">
+    <button onclick="loadSimBrief()">IMPORT OFP</button>
+  </div>
+
+  <div class="panel">
     <div class="panel-title">FLIGHT DATA</div>
     <input id="callsign" placeholder="CALLSIGN">
+    <input id="dep" placeholder="DEPARTURE ICAO">
+    <input id="arr" placeholder="ARRIVAL ICAO">
     <input id="route" placeholder="ROUTE">
+    <input id="fl" placeholder="CRUISE FL">
   </div>
 
   <div class="panel">
@@ -199,27 +207,52 @@ function loadDrawing() {
 }
 loadDrawing();
 
-/* PDF EXPORT + DATA */
+/* PDF EXPORT (GERÇEK PDF) */
 function exportPDF() {
   const { jsPDF } = window.jspdf;
 
-  const pdf = new jsPDF({
-    orientation: "landscape",
-    unit: "px",
-    format: [canvas.width, canvas.height + 60]
-  });
+  const pdf = new jsPDF();
 
   const callsign = document.getElementById("callsign").value || "-";
   const route = document.getElementById("route").value || "-";
 
   pdf.setFontSize(16);
-  pdf.text(`CALLSIGN: ${callsign}`, 20, 30);
-  pdf.text(`ROUTE: ${route}`, 20, 50);
+  pdf.text("VIRTUAL WINGS PILOT PAD", 20, 20);
+  pdf.text("CALLSIGN: " + callsign, 20, 35);
+  pdf.text("ROUTE: " + route, 20, 50);
 
   const imgData = canvas.toDataURL("image/png");
-  pdf.addImage(imgData, "PNG", 0, 70, canvas.width, canvas.height);
+  pdf.addImage(imgData, "PNG", 15, 60, 180, 100);
 
-  pdf.save("virtual-wings-flight-notes.pdf");
+  pdf.save("virtual-wings-notes.pdf");
+}
+
+/* SIMBRIEF IMPORT (GÜVENİLİR DATA) */
+async function loadSimBrief() {
+  const id = document.getElementById("simbriefID").value;
+
+  if (!id) {
+    alert("SIMBRIEF ID GİR");
+    return;
+  }
+
+  try {
+    const url = `https://www.simbrief.com/api/xml.fetcher.php?userid=${id}&json=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    document.getElementById("callsign").value = data.general.callsign || "";
+    document.getElementById("route").value = data.general.route || "";
+    document.getElementById("dep").value = data.origin.icao_code || "";
+    document.getElementById("arr").value = data.destination.icao_code || "";
+    document.getElementById("fl").value = "FL" + data.general.initial_altitude || "";
+
+    alert("OFP IMPORTED ✈️");
+
+  } catch (err) {
+    alert("SimBrief bağlantı hatası");
+    console.error(err);
+  }
 }
 
 /* SERVICE WORKER */
@@ -230,6 +263,9 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+
+
 
 
 
